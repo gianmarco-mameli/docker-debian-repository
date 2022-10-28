@@ -1,54 +1,64 @@
-FROM debian:latest
-LABEL maintainer="Glenn Y. Rolland <glenux@glenux.net>"
-LABEL contributors="Dmitrii Zolotov <dzolotov@herzen.spb.ru>"
+FROM debian:bullseye-slim
 
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update
-
+ENV SSH_USERPASS temp_pass
+ENV REPREPRO_BASE_DIR /repo
+ENV REPREPRO_CONFIG_DIR /conf
+ENV INCOMING_DIR /incoming
+ENV GNUPGHOME /gnupg
+ENV KEYS_DIR /keys
 
 # Install supervisor for managing services
-RUN apt-get install -q -y supervisor cron openssh-server pwgen reprepro screen vim-tiny nginx
-
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+                                        supervisor \
+                                        cron \
+                                        openssh-server \
+                                        pwgen \
+                                        reprepro \
+                                        screen \
+                                        vim-tiny \
+                                        nginx \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/*
 
 # Configure cron
 # Install cron for managing regular tasks
 RUN sed -i 's/\(session *required *pam_loginuid.so\)/#\1/' /etc/pam.d/cron
 
-
 # Install ssh (run/stop to create required directories)
-RUN mkdir /var/run/sshd
-#RUN service ssh start ; sleep 1
-RUN service ssh stop
-
+RUN mkdir -p /var/run/sshd
+# RUN service ssh start ; sleep 1
+# RUN service ssh stop
 
 # Configure reprepro
-ADD scripts/reprepro-import.sh /usr/local/sbin/reprepro-import
+COPY scripts/reprepro-import.sh /usr/local/sbin/reprepro-import
 RUN chmod 755 /usr/local/sbin/reprepro-import
-RUN mkdir -p /var/lib/reprepro/conf
-ADD configs/reprepro-distributions /var/lib/reprepro/conf/distributions
+            # && mkdir -p /var/lib/reprepro/conf
+
+COPY $REPREPRO_CONFIG_DIR $REPREPRO_CONFIG_DIR
 
 # Configure nginx
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-RUN rm -f /etc/nginx/sites-enabled/default
-ADD configs/nginx-default.conf /etc/nginx/sites-enabled/default
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf \
+    && rm -f /etc/nginx/sites-enabled/default
+
+COPY configs/nginx-default.conf /etc/nginx/sites-enabled/default
 
 # Setup root access
 RUN echo "root:docker" | chpasswd
 
 # Configure supervisor
-RUN service supervisor stop
-ADD configs/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-ADD configs/supervisor-cron.conf /etc/supervisor/conf.d/cron.conf
-ADD configs/supervisor-ssh.conf /etc/supervisor/conf.d/ssh.conf
-ADD configs/supervisor-nginx.conf /etc/supervisor/conf.d/nginx.conf
+# RUN service supervisor stop
+
+COPY configs/supervisor/ /etc/supervisor/conf.d/
 
 # Finalize
 ENV DEBIAN_FRONTEND newt
 
-ADD scripts/start.sh /usr/local/sbin/start
+COPY scripts/start.sh /usr/local/sbin/start
 RUN chmod 755 /usr/local/sbin/start
 
-VOLUME ["/docker/keys", "/docker/incoming", "/repository"]
+VOLUME [$KEYS_DIR, $REPREPRO_BASE_DIR, $GNUPGHOME, $REPREPRO_CONFIG_DIR, $INCOMING_DIR]
 
 EXPOSE 80
 EXPOSE 22

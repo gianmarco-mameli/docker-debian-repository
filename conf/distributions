@@ -1,0 +1,3 @@
+Codename: bullseye
+Architectures: i386 amd64 armhf arm64
+Components: main non-free contrib

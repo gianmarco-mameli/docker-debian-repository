@@ -1,17 +1,16 @@
 #!/bin/sh
 
-# Many thanks to John Fink <john.fink@gmail.com> for the 
-# inspiration and to his great work on docker-wordpress' 
+# Many thanks to John Fink <john.fink@gmail.com> for the
+# inspiration and to his great work on docker-wordpress'
 
 # reset root password
 
 # let's create a user to SSH into
-SSH_USERPASS=`pwgen -c -n -1 8`
-mkdir /home/user
+# SSH_USERPASS=`pwgen -c -n -1 8`
+mkdir /home/user /incoming /repo
 useradd -d /home/user -s /bin/bash user
-chown -R user /home/user
-chown -R user /docker/incoming
-	
+chown -R user /home/user /incoming /repo
+
 echo "user:$SSH_USERPASS" | chpasswd
 echo "ssh user password: $SSH_USERPASS"
 
@@ -19,7 +18,7 @@ echo "ssh user password: $SSH_USERPASS"
 echo "Pre-loading SSH keys from /docker/keys"
 mkdir -p /home/user/.ssh
 rm -f /home/user/.ssh/authorized_keys
-for key in /docker/keys/*.pub ; do
+for key in /keys/* ; do
 	echo "- adding key $key"
 	cat $key >> /home/user/.ssh/authorized_keys
 done
@@ -31,6 +30,8 @@ crontab <<EOF
 EOF
 
 # run import once, to create the right directory structure
-/usr/local/sbin/reprepro-import
+# /usr/local/sbin/reprepro-import
+
+reprepro --gnupghome ${GNUPG} export
 
 supervisord -n

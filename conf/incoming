@@ -1,0 +1,4 @@
+Name: all
+IncomingDir: /incoming
+TempDir: /tmp/reprepro
+Allow: bullseye
