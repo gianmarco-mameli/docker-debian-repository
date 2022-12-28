@@ -1,7 +1,7 @@
 variables:
   IMAGE_NAME: "docker-debian-repository"
   REGISTRY_IMAGE: "$PRIVATE_REGISTRY/$IMAGE_NAME"
-  VERSION: "1.0"
+  VERSION: "v1"
   DOCKER_VERSION: "20.10.21"
   DIND_VERSION: $DOCKER_VERSION'-dind'
   BUILDX_IMAGE: "gitlab-registry.docker.local/docker_images/buildx:latest"
