@@ -7,6 +7,9 @@ ENV INCOMING_DIR /incoming
 ENV GNUPGHOME /gnupg
 ENV KEYS_DIR /keys
 
+# hadolint DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Install supervisor for managing services
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
@@ -24,10 +27,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 # Configure cron
 # Install cron for managing regular tasks
-RUN sed -i 's/\(session *required *pam_loginuid.so\)/#\1/' /etc/pam.d/cron
-
-# Install ssh (run/stop to create required directories)
-RUN mkdir -p /var/run/sshd
+RUN sed -i 's/\(session *required *pam_loginuid.so\)/#\1/' /etc/pam.d/cron \
+    # Install ssh (run/stop to create required directories)
+    && mkdir -p /var/run/sshd
 # RUN service ssh start ; sleep 1
 # RUN service ssh stop
 
