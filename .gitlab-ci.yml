@@ -12,7 +12,7 @@ image: docker:$DOCKER_VERSION
 stages:
   - linting
   - build
-  # - publish
+  - publish
 
 # before_script:
 #   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -40,10 +40,18 @@ build_image:
   script:
     - docker buildx create --use --name ${BUILDER_IMAGE} --config=buildkitd.toml
     - docker buildx bake --load --file package_bake.hcl --progress plain
-    - docker manifest create $REGISTRY_IMAGE:${VERSION} --amend $REGISTRY_IMAGE:${VERSION}-armv7 --amend $REGISTRY_IMAGE:${VERSION}-arm64
+    # - docker manifest create $REGISTRY_IMAGE:${VERSION} --amend $REGISTRY_IMAGE:${VERSION}-armv7 --amend $REGISTRY_IMAGE:${VERSION}-arm64
   # rules:
   #   - changes:
   #     - .gitlab-ci.yml
   #     - package_bake.hcl
   #     - build_publish.sh
   # when: manual
+
+publish_image:
+  stage: publish
+  image: $BUILDX_IMAGE
+  script:
+    - docker manifest create $REGISTRY_IMAGE:$VERSION --amend $REGISTRY_IMAGE:$VERSION-armv7 --amend $REGISTRY_IMAGE:$VERSION-arm64
+    - docker manifest push $REGISTRY_IMAGE:$VERSION
+  # rules:
