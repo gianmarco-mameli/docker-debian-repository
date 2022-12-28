@@ -1,0 +1,32 @@
+variables:
+  IMAGE_NAME: "debianrepo"
+  VERSION: "1.0"
+  DOCKER_VERSION: "20.10.21"
+  DIND_VERSION: $DOCKER_VERSION'-dind'
+  BUILDX_IMAGE: "gitlab-registry.docker.local/docker_images/buildx:latest"
+  BUILDER_IMAGE: "${IMAGE_NAME}-builder-$CI_CONCURRENT_ID"
+
+image: docker:$DOCKER_VERSION
+
+stages:
+  - linting
+  # - build
+  # - publish
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+after_script:
+  - docker buildx stop ${BUILDER_IMAGE}
+  - docker buildx rm ${BUILDER_IMAGE}
+
+.hadolint:
+  stage: linting
+  image: registry.gitlab.com/pipeline-components/hadolint:latest
+  script:
+    - hadolint Dockerfile
+  allow_failure: true
+  rules:
+    - changes:
+      - Dockerfile*
+  when: manual
