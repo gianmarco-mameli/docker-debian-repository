@@ -35,7 +35,8 @@ build_image:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker buildx create --use --name ${BUILDER_IMAGE} --config=buildkitd.toml
-    - docker buildx bake --push --file package_bake.hcl --progress plain
+    - docker buildx build --load --progress plain -f Dockerfile --platform linux/armv7 -t ${REGISTRY_IMAGE}:${VERSION}-armv7 .
+    - docker buildx build --load --progress plain -f Dockerfile --platform linux/arm64 -t ${REGISTRY_IMAGE}:${VERSION}-arm64 .
     # - docker manifest create $REGISTRY_IMAGE:${VERSION} --amend $REGISTRY_IMAGE:${VERSION}-armv7 --amend $REGISTRY_IMAGE:${VERSION}-arm64
   # rules:
   #   - changes:
@@ -51,6 +52,6 @@ publish_image:
   stage: publish
   image: $BUILDX_IMAGE
   script:
-    - docker manifest create $REGISTRY_IMAGE:$VERSION --amend $REGISTRY_IMAGE:$VERSION-armv7 --amend $REGISTRY_IMAGE:$VERSION-arm64
+    - docker manifest create ${REGISTRY_IMAGE}:${VERSION} --amend ${REGISTRY_IMAGE}:${VERSION}-armv7 --amend ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest push $REGISTRY_IMAGE:$VERSION
   # rules:
