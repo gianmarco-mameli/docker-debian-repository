@@ -17,10 +17,6 @@ stages:
 # before_script:
 #   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-after_script:
-  - docker buildx stop ${BUILDER_IMAGE}
-  - docker buildx rm ${BUILDER_IMAGE}
-
 hadolint:
   stage: linting
   image: registry.gitlab.com/pipeline-components/hadolint:latest
@@ -39,7 +35,7 @@ build_image:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker buildx create --use --name ${BUILDER_IMAGE} --config=buildkitd.toml
-    - docker buildx bake --load --file package_bake.hcl --progress plain
+    - docker buildx bake --push --file package_bake.hcl --progress plain
     # - docker manifest create $REGISTRY_IMAGE:${VERSION} --amend $REGISTRY_IMAGE:${VERSION}-armv7 --amend $REGISTRY_IMAGE:${VERSION}-arm64
   # rules:
   #   - changes:
@@ -47,6 +43,9 @@ build_image:
   #     - package_bake.hcl
   #     - build_publish.sh
   # when: manual
+  after_script:
+    - docker buildx stop ${BUILDER_IMAGE}
+    - docker buildx rm ${BUILDER_IMAGE}
 
 publish_image:
   stage: publish
