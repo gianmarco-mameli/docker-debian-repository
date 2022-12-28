@@ -20,7 +20,7 @@ after_script:
   - docker buildx stop ${BUILDER_IMAGE}
   - docker buildx rm ${BUILDER_IMAGE}
 
-.hadolint:
+hadolint:
   stage: linting
   image: registry.gitlab.com/pipeline-components/hadolint:latest
   script:
