@@ -1,6 +1,0 @@
-debug = true
-[registry."gitlab-registry.docker.local"]
-  ca=["/usr/local/share/ca-certificates/myCA.pem"]
-[registry."registry.docker.local"]
-  ca=["/usr/local/share/ca-certificates/myCA.pem"]
-
