@@ -49,10 +49,10 @@ build_image:
     - docker buildx stop ${BUILDER_IMAGE}
     - docker buildx rm ${BUILDER_IMAGE}
 
-# publish_image:
-  #  stage: publish
-#   image: $BUILDX_IMAGE
-#   script:
-    # - docker manifest create ${REGISTRY_IMAGE}:${VERSION} --amend ${CI_REGISTRY_IMAGE}:${VERSION}-armv7 --amend ${CI_REGISTRY_IMAGE}:${VERSION}-arm64
-    # - docker manifest push $REGISTRY_IMAGE:$VERSION
-  # rules:
+publish_image:
+  stage: publish
+  image: $BUILDX_IMAGE
+  script:
+    - docker manifest create ${REGISTRY_IMAGE}:${VERSION} --amend ${REGISTRY_IMAGE}:${VERSION}-armv7 --amend ${REGISTRY_IMAGE}:${VERSION}-arm64
+    - docker manifest push $REGISTRY_IMAGE:$VERSION
+  rules:
