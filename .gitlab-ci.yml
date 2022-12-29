@@ -44,7 +44,7 @@ build_image:
   #     - .gitlab-ci.yml
   #     - package_bake.hcl
   #     - build_publish.sh
-  # when: manual
+  when: manual
   after_script:
     - docker buildx stop ${BUILDER_IMAGE}
     - docker buildx rm ${BUILDER_IMAGE}
@@ -53,7 +53,8 @@ publish_image:
   stage: publish
   image: $BUILDX_IMAGE
   script:
-    - docker push ${REGISTRY_IMAGE}:${VERSION}-armv7 ${REGISTRY_IMAGE}:${VERSION}-arm64
+    - docker push ${REGISTRY_IMAGE}:${VERSION}-armv7
+    - docker push ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest create ${REGISTRY_IMAGE}:${VERSION} --amend ${REGISTRY_IMAGE}:${VERSION}-armv7 --amend ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest push $REGISTRY_IMAGE:$VERSION
   rules:
