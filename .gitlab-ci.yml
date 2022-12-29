@@ -7,7 +7,7 @@ variables:
   BUILDX_IMAGE: "gitlab-registry.docker.local/docker_images/buildx:latest"
   BUILDER_IMAGE: "${IMAGE_NAME}-builder-$CI_CONCURRENT_ID"
 
-image: docker:$DOCKER_VERSION
+
 
 stages:
   - linting
@@ -16,6 +16,8 @@ stages:
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+image: docker:$DOCKER_VERSION
 
 hadolint:
   stage: linting
@@ -50,6 +52,7 @@ publish_image:
   stage: publish
   # image: $BUILDX_IMAGE
   script:
+    - update-ca-certificates
     - docker push ${REGISTRY_IMAGE}:${VERSION}-armv7
     - docker push ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest create ${REGISTRY_IMAGE}:${VERSION} --amend ${REGISTRY_IMAGE}:${VERSION}-armv7 --amend ${REGISTRY_IMAGE}:${VERSION}-arm64
