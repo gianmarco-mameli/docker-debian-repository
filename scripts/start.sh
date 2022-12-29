@@ -32,6 +32,6 @@ EOF
 # run import once, to create the right directory structure
 # /usr/local/sbin/reprepro-import
 
-reprepro --gnupghome ${GNUPG} export
+reprepro --gnupghome ${GNUPGHOME} export
 
 supervisord -n

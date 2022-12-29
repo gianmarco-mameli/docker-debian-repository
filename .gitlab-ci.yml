@@ -7,8 +7,6 @@ variables:
   BUILDX_IMAGE: "gitlab-registry.docker.local/docker_images/buildx:latest"
   BUILDER_IMAGE: "${IMAGE_NAME}-builder-$CI_CONCURRENT_ID"
 
-
-
 stages:
   - linting
   - build
@@ -32,32 +30,26 @@ hadolint:
 build_image:
   stage: build
   image: $BUILDX_IMAGE
-  # before_script:
-  #   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker buildx create --use --name ${BUILDER_IMAGE} --config=buildkitd.toml
-    # - docker buildx build --push --progress plain -f Dockerfile --platform linux/arm/v7 -t ${REGISTRY_IMAGE}:${VERSION}-armv7 .
-    # - docker buildx build --push --progress plain -f Dockerfile --platform linux/arm64 -t ${REGISTRY_IMAGE}:${VERSION}-arm64 .
     - docker buildx bake --load --file package_bake.hcl --progress plain
-    # - docker manifest create $REGISTRY_IMAGE:${VERSION} --amend $REGISTRY_IMAGE:${VERSION}-armv7 --amend $REGISTRY_IMAGE:${VERSION}-arm64
-  rules:
-    - changes:
-        - .gitlab-ci.yml
-        - package_bake.hcl
+  # rules:
+  #   - changes:
+  #       - .gitlab-ci.yml
+  #       - package_bake.hcl
   after_script:
     - docker buildx stop ${BUILDER_IMAGE}
     - docker buildx rm ${BUILDER_IMAGE}
 
 publish_image:
   stage: publish
-  # image: $BUILDX_IMAGE
   script:
     - update-ca-certificates
     - docker push ${REGISTRY_IMAGE}:${VERSION}-armv7
     - docker push ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest create ${REGISTRY_IMAGE}:${VERSION} --amend ${REGISTRY_IMAGE}:${VERSION}-armv7 --amend ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest push $REGISTRY_IMAGE:$VERSION
-  rules:
-    - changes:
-        - .gitlab-ci.yml
-        - package_bake.hcl
+  # rules:
+  #   - changes:
+  #       - .gitlab-ci.yml
+  #       - package_bake.hcl
