@@ -14,6 +14,8 @@ target "default" {
   dockerfile = "Dockerfile"
   args = {
   }
+  // platforms = ["linux/arm/v7"]
+  // tags = ["${REGISTRY_IMAGE}:${VERSION}
 }
 
 target "package-armv7" {
