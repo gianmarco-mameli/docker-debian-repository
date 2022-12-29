@@ -37,7 +37,7 @@ build_image:
     - docker buildx create --use --name ${BUILDER_IMAGE} --config=buildkitd.toml
     # - docker buildx build --push --progress plain -f Dockerfile --platform linux/arm/v7 -t ${REGISTRY_IMAGE}:${VERSION}-armv7 .
     # - docker buildx build --push --progress plain -f Dockerfile --platform linux/arm64 -t ${REGISTRY_IMAGE}:${VERSION}-arm64 .
-    - docker buildx bake --load --file package_bake.hcl --progress plain
+    - docker buildx bake --push --file package_bake.hcl --progress plain
     # - docker manifest create $REGISTRY_IMAGE:${VERSION} --amend $REGISTRY_IMAGE:${VERSION}-armv7 --amend $REGISTRY_IMAGE:${VERSION}-arm64
   # rules:
   #   - changes:
@@ -53,6 +53,7 @@ publish_image:
   stage: publish
   image: $BUILDX_IMAGE
   script:
+    - docker push ${REGISTRY_IMAGE}:${VERSION}-armv7 ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest create ${REGISTRY_IMAGE}:${VERSION} --amend ${REGISTRY_IMAGE}:${VERSION}-armv7 --amend ${REGISTRY_IMAGE}:${VERSION}-arm64
     - docker manifest push $REGISTRY_IMAGE:$VERSION
   rules:
